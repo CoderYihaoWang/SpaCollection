@@ -1,21 +1,49 @@
 html, body {
     margin: 0;
     box-sizing: border-box;
-    background-color: slategray;
+    background-color: #222222;
+    font-family: 'Courier New', Courier, monospace;
 }
-h1, p, input {
-    margin: auto;
-    display: block;
+h1 {
+    margin-top: 2vw;
+    margin-bottom: 0;
     text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
+    font-size: 4vw;
+    color: #bbbbbb
+}
+p {
+    margin: 1.5vw;
+    text-align: center;
+    font-size: 1.5vw
+}
+.start, .stop {
+    display: block;
+    margin: auto;
+    text-align: center;
+    font-family: inherit;
+    font-weight: bold;
+    background-color: transparent;
+    border: none;
+    font-size: 2vw;
+    line-height: 3vw;
+    cursor: pointer;
+}
+.start:hover, .stop:hover {
+    transform: scale(1.2, 1.2);
+}
+.start {
+    color: darkgreen;
+}
+.stop {
+    color: maroon;
 }
 #container {
     margin: auto;
     width: 35%;
-    min-width: 200px;
+    min-width: 250px;
     height: 35vw;
-    min-height: 200px;
-    background-color: aliceblue;
+    min-height: 250px;
+    background-color: transparent;
     display: grid;
     grid-template-columns: 
         auto auto auto auto auto
@@ -24,11 +52,15 @@ h1, p, input {
         auto auto auto auto auto;
     grid-gap: 2px;
 }
-.cell {
-    border-color: brown;
-    border-width: 2px;
-    background-color: blue;
+.cell, .alive {
+    background-color: #444444;
+    color-interpolation-filters: linearRGB;
+    border-radius: 20%;
+    cursor: pointer;
 }
-.cell:hover {
-    transform: scale(1.2, 1.2)
+.cell:hover, .alive:hover {
+    transform: scale(1.4, 1.4);
+}
+.alive {
+    background-color: darkgreen;
 }
