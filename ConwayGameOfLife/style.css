@@ -14,7 +14,8 @@ h1 {
 p {
     margin: 1.5vw;
     text-align: center;
-    font-size: 1.5vw
+    font-size: 1.5vw;
+    color: #bbbbbb;
 }
 .start, .stop {
     display: block;
