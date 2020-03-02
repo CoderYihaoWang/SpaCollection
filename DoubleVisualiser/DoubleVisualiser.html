@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<head>
+    <title>Double Visualiser</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Yihao">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            margin: auto;
+            background-color: rgb(240, 213, 140);
+            color: rgb(16, 16, 112);
+        }
+        h1 {
+            margin: 2% auto;
+            text-align: center;
+            font-size: 3.5em;
+        }
+        label {
+            display: block;
+            margin: 2% auto;
+        }
+        table {
+            margin: 2% auto;
+        }
+        td {
+            font-size: 1.7em;
+            text-align: center;
+        }
+        p, label {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 0;
+        }
+        input {
+            font-size: 2em;
+            text-align: center;
+            border: solid 0.1em rgb(0, 0, 134);
+            border-radius: 0.2em;
+        }
+        div {
+            margin: 2% auto;
+            text-align: center;
+        }
+        .description {
+            font-size: 1em;
+            margin: auto;
+            font-weight: bold;
+        }
+        .sign {
+            color: rgb(192, 81, 81);
+        }
+        .exponent {
+            color: rgb(10, 85, 10)
+        }
+        .significand {
+            color: rgb(56, 10, 182);
+        }
+        .highlighted {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Double Visualiser</h1>
+    <label for="input">Input a decimal below to see its bit representation:<br>
+        <input id="input" placeholder="for example 0.1" value = 0.0 onchange="compute()"></input>
+    </label>
+    <table id="bits">
+        <tr>
+            <th class="sign" onmouseover="highlight('sign')" onmouseout="clearHighlight()">sign</th>
+            <th class="exponent" onmouseover="highlight('exponent')" onmouseout="clearHighlight()">exponent</th>
+            <th class="significand" onmouseover="highlight('significand')" onmouseout="clearHighlight()">significand</th>
+        </tr>
+        <tr>
+            <td class="sign" id="signBit" onmouseover="highlight('sign')" onmouseout="clearHighlight()"></td>
+            <td class="exponent" id="exponentBits" onmouseover="highlight('exponent')" onmouseout="clearHighlight()"></td>
+            <td class="significand" id="significandBits" onmouseover="highlight('significand')" onmouseout="clearHighlight()"></td>
+        </tr>
+    </table>
+    <div id="binary">
+        <p class="description">In Binary:</p>
+        <p>(-1)<sup class="sign" id="signBinary" onmouseover="highlight('sign')" onmouseout="clearHighlight()"></sup>&#10005;
+            <span class="significand" id="significandBinary" onmouseover="highlight('significand')" onmouseout="clearHighlight()"></span>&#10005;
+            (10) 
+            <sup class="exponent" id="exponentBinary" onmouseover="highlight('exponent')" onmouseout="clearHighlight()"></sup><sup>-01111111111</sup>
+        </p>
+    </div>
+    <div id="decimal">
+        <p class="description">In Decimal:</p>
+        <p>(-1)<sup class="sign" id="signDecimal" onmouseover="highlight('sign')" onmouseout="clearHighlight()"></sup>&#10005;
+            <span class="significand"  id="significandDecimal" onmouseover="highlight('significand')" onmouseout="clearHighlight()"></span>&#10005;
+            2 
+            <sup class="exponent" id="exponentDecimal" onmouseover="highlight('exponent')" onmouseout="clearHighlight()"></sup><sup>-1023</sup>=<span id="resultDecimal"></span></p>
+    </div>
+
+    <script>
+        function compute() {
+            const value = Number.parseFloat(document.getElementById("input").value)
+            let signBit, exponentBits, significandBits
+                , signBinary, exponentBinary, significandBinary
+                , signDecimal, exponentDecimal, significandDecimal
+                , resultBinary, resultDecimal
+            const buffer = new ArrayBuffer(8)
+            const floatView = new Float64Array(buffer)
+            const intView = new Int32Array(buffer)
+            floatView[0] = value
+            const bits = Array.from(intView).reverse()
+                        .map(a => ((a < 0 ? "1" : "0") + (a << 1 >>> 1).toString(2).padStart(31, "0"))
+                                .split(""))
+                        .reduce((s, a) => s.concat(a))
+                        .join("")
+
+            let subnormal = false
+            let sign = bits[0]
+            if (sign === "1") {
+                signBit = "1"
+                signBinary = signDecimal = 1
+            }
+            else {
+                signBit = "0"
+                signBinary = signDecimal = 0
+            }
+
+            exponentBits = bits.slice(1, 12)
+            exponentBinary = exponentBits
+            if (exponentBits.split("").every(c => c === "0")) {
+                subnormal = true
+                exponentBinary = "00000000001"
+            }
+            exponentDecimal = Number.parseInt(exponentBinary, 2)
+
+            significandBits = bits.slice(12, 64)
+            significandBinary = (subnormal ? "0." : "1.") + significandBits
+            significandDecimal = subnormal ? 0 : 1
+            for (let i = 0; i < 53; ++i) {
+                if (significandBits[i] === "1")
+                    significandDecimal += Math.pow(2, -(i + 1))
+            }
+
+            resultDecimal = Number.parseFloat(significandDecimal) * Math.pow(2, Number.parseInt(exponentDecimal) - 1023)
+            if (sign === "1")
+                resultDecimal = -resultDecimal
+
+            document.getElementById("signBit").innerText = signBit
+            document.getElementById("exponentBits").innerText = exponentBits
+            document.getElementById("significandBits").innerText = significandBits
+            document.getElementById("signBinary").innerText = signBinary
+            document.getElementById("exponentBinary").innerText = exponentBinary
+            document.getElementById("significandBinary").innerText = significandBinary
+            document.getElementById("signDecimal").innerText = signDecimal
+            document.getElementById("exponentDecimal").innerText = exponentDecimal
+            document.getElementById("significandDecimal").innerText = significandDecimal
+            document.getElementById("resultDecimal").innerText = resultDecimal
+        }
+
+        function highlight(target) {
+            console.log(target)
+            const eles = document.getElementsByClassName(target)
+            for (let i = 0; i < eles.length; ++i)
+                eles[i].classList.add("highlighted")
+        }
+
+        function clearHighlight() {
+            const eles = document.getElementsByClassName("highlighted")
+            while (eles.length)
+                eles[0].classList.remove("highlighted")
+        }
+
+        window.onload = compute
+    </script>
+</body>
